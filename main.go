@@ -7,9 +7,6 @@ import (
 )
 
 
-const GAME_MAX_LEVEL int = 100
-
-
 const CORRECT_GUESS_DEFAULT_OUTPUT_FORMAT string = `
                      Correct Guess
                    Next Level %d -> %d
