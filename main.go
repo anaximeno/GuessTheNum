@@ -39,7 +39,7 @@ const WIN_GAME_OUTPUT string = `
 
 
 type GameLevel struct {
-    levelNum int
+    levelID int
     nTries int
     minRange int
     maxRange int
@@ -50,7 +50,7 @@ type GameLevel struct {
 
 
 type GameState struct {
-    currentLevel *GameLevel
+    level *GameLevel
     totalLevels int
     playerTries int
     lastPlayerGuess int
@@ -100,7 +100,7 @@ func main() {
         } else {
             fmt.Printf(
                 NO_MORE_TENTATIVES_DEFAULT_OUTPUT_FORMAT,
-                guessingGame.currentLevel.numberToGuess,
+                guessingGame.level.numberToGuess,
             )
             if enterpoint() {
                 guessingGame.reboot()
@@ -114,17 +114,17 @@ func main() {
 
 func (game *GameState) init() {
     game.lastPlayerGuess = -1
-    game.playerTries = game.currentLevel.nTries
+    game.playerTries = game.level.nTries
 }
 
 
 func (game *GameState) reboot() {
-    var cur *GameLevel
-    for cur = game.currentLevel ; cur.prev != nil ; cur = cur.prev {
-        cur.changeGuessingNumber()
+    var level *GameLevel
+    for level = game.level ; level.prev != nil ; level = level.prev {
+        level.changeGuessingNumber()
     }
-    cur.changeGuessingNumber()
-    game.currentLevel = cur
+    game.level = level
+    game.level.changeGuessingNumber()
     game.init()
 }
 
@@ -134,9 +134,9 @@ func (game *GameState) run() {
     for game.consumeTry() {
         fmt.Printf(
             MAIN_SECTION_DEFAULT_OUTPUT_FORMAT,
-            game.currentLevel.levelNum,
-            game.currentLevel.minRange,
-            game.currentLevel.maxRange,
+            game.level.levelID,
+            game.level.minRange,
+            game.level.maxRange,
             game.playerTries + 1,
             game.giveHint(),
         )
@@ -148,8 +148,8 @@ func (game *GameState) run() {
             if game.transitLevel() {
                 fmt.Printf(
                     CORRECT_GUESS_DEFAULT_OUTPUT_FORMAT,
-                    game.currentLevel.prev.levelNum,
-                    game.currentLevel.levelNum,
+                    game.level.prev.levelID,
+                    game.level.levelID,
                 )
                 if !enterpoint() {
                     break
@@ -170,9 +170,9 @@ func (gameLevel *GameLevel) changeGuessingNumber() {
 
 
 func (game *GameState) transitLevel() bool {
-    if game.currentLevel != nil && game.currentLevel.next != nil {
-        game.currentLevel = game.currentLevel.next
-        game.playerTries = game.currentLevel.nTries
+    if game.level != nil && game.level.next != nil {
+        game.level = game.level.next
+        game.playerTries = game.level.nTries
         game.lastPlayerGuess = -1
         return true
     } else {
@@ -186,28 +186,28 @@ func (game *GameState) addLevel(minRange, maxRange, nTries int) {
         game.totalLevels += 1
     }()
 
-    if game.currentLevel == nil {
-        game.currentLevel = &GameLevel {
-            levelNum:       1,
+    if game.level == nil {
+        game.level = &GameLevel{
+            levelID:       1,
             nTries:         nTries,
             minRange:       minRange,
             maxRange:       maxRange,
             prev:           nil,
             next:           nil,
         }
-        game.currentLevel.changeGuessingNumber()
+        game.level.changeGuessingNumber()
     } else {
-        var cur *GameLevel
-        for cur = game.currentLevel ; cur.next != nil ; cur = cur.next {}
-        cur.next = &GameLevel{
-            levelNum:       cur.levelNum + 1,
+        var level *GameLevel
+        for level = game.level ; level.next != nil ; level = level.next {}
+        level.next = &GameLevel{
+            levelID:       level.levelID + 1,
             nTries:         nTries,
             minRange:       minRange,
             maxRange:       maxRange,
-            prev:           cur,
+            prev:           level,
             next:           nil,
         }
-        cur.next.changeGuessingNumber()
+        level.next.changeGuessingNumber()
     }
 }
 
@@ -223,9 +223,9 @@ func (game *GameState) consumeTry() bool {
 
 
 func (game GameState) giveHint() string {
-    if game.lastPlayerGuess == -1 {
+    if lastGuess := game.lastPlayerGuess; lastGuess == -1 {
         return "no hints yet"
-    } else if game.currentLevel.numberToGuess > game.lastPlayerGuess {
+    } else if game.level.numberToGuess > game.lastPlayerGuess {
         return fmt.Sprintf("greater than %d", game.lastPlayerGuess)
     } else {
         return fmt.Sprintf("lower than %d", game.lastPlayerGuess)
@@ -234,5 +234,5 @@ func (game GameState) giveHint() string {
 
 
 func (game GameState) checkGuess() bool {
-    return game.currentLevel.numberToGuess == game.lastPlayerGuess
+    return game.level.numberToGuess == game.lastPlayerGuess
 }
