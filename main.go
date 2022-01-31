@@ -39,7 +39,7 @@ const WIN_GAME_OUTPUT string = `
 
 
 type GameLevel struct {
-    levelID int
+    id int
     nTries int
     minRange int
     maxRange int
@@ -134,7 +134,7 @@ func (game *GameState) run() {
     for game.consumeTry() {
         fmt.Printf(
             MAIN_SECTION_DEFAULT_OUTPUT_FORMAT,
-            game.level.levelID,
+            game.level.id,
             game.level.minRange,
             game.level.maxRange,
             game.playerTries + 1,
@@ -148,8 +148,8 @@ func (game *GameState) run() {
             if game.transitLevel() {
                 fmt.Printf(
                     CORRECT_GUESS_DEFAULT_OUTPUT_FORMAT,
-                    game.level.prev.levelID,
-                    game.level.levelID,
+                    game.level.prev.id,
+                    game.level.id,
                 )
                 if !enterpoint() {
                     break
@@ -188,7 +188,7 @@ func (game *GameState) addLevel(minRange, maxRange, nTries int) {
 
     if game.level == nil {
         game.level = &GameLevel{
-            levelID:       1,
+            id:             1,
             nTries:         nTries,
             minRange:       minRange,
             maxRange:       maxRange,
@@ -200,7 +200,7 @@ func (game *GameState) addLevel(minRange, maxRange, nTries int) {
         var level *GameLevel
         for level = game.level ; level.next != nil ; level = level.next {}
         level.next = &GameLevel{
-            levelID:       level.levelID + 1,
+            id:             level.id + 1,
             nTries:         nTries,
             minRange:       minRange,
             maxRange:       maxRange,
