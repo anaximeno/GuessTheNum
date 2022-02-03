@@ -8,35 +8,36 @@ import (
 
 
 const CORRECT_GUESS_DEFAULT_OUTPUT_FORMAT string = `
-                     Correct Guess
-                   Next Level %d -> %d
+                  <<< CORRECT GUESS >>>
+           Continue to the next level %d -> %d ?
 
      Write 'q' to quit or click 'enter' to continue
 
 ==> `
 
 const NO_MORE_TENTATIVES_DEFAULT_OUTPUT_FORMAT string = `
-                   NO MORE TENTATIVES
-                The correct number was %d
+                    -> 0 MORE ATTEMPTS <-
+         You losed the game! The correct guess was %d
 
-    Write 'q' to quit or click 'enter' to play again.
+      Write 'q' to quit or click 'enter' to play again.
 
 ==> `
 
 const MAIN_SECTION_DEFAULT_OUTPUT_FORMAT string = `
  Level %d: Guess a number between %d and %d
- %d more tentatives
+ %d more attempts
 
  Hint: %s
  ----------------------------
  Guess => `
 
 const WIN_GAME_OUTPUT string = `
-                   YOU WON THE GAME
-            Now you're the guessing master
-                !!! CONGRATULATIONS !!!
+           CONGRATULATIONS! YOU WON THE GAME.
+       Now you are "officially" the guessing master.
+
 `
 
+const NO_GUESS int = -1
 
 type GameLevel struct {
     id int
@@ -49,11 +50,16 @@ type GameLevel struct {
 }
 
 
+type Player struct {
+    triesLeft int
+    lastGuess int
+}
+
+
 type GameState struct {
+    nLevels int
     level *GameLevel
-    totalLevels int
-    playerTries int
-    lastPlayerGuess int
+    player Player
 }
 
 
@@ -75,22 +81,23 @@ func enterpoint() bool {
 
 func main() {
     rand.Seed(time.Now().UnixNano())
-    guessingGame := GameState{}
+    guessingGame := GameState{ player: Player {} }
 
     /* Levels of the game */
-    guessingGame.addLevel(0, 50, 5)
-    guessingGame.addLevel(0, 70, 5)
-    guessingGame.addLevel(0, 100, 5)
-    guessingGame.addLevel(0, 120, 5)
-    guessingGame.addLevel(0, 150, 6)
-    guessingGame.addLevel(0, 200, 6)
-    guessingGame.addLevel(0, 500, 7)
-    guessingGame.addLevel(0, 1000, 7)
-    guessingGame.addLevel(0, 2500, 8)
-    guessingGame.addLevel(0, 10000, 12)
-    guessingGame.addLevel(2, 13, 1)
+    guessingGame.addLevel(0, 2, 2)
+    guessingGame.addLevel(0, 2, 2)
+    // guessingGame.addLevel(0, 70, 5)
+    // guessingGame.addLevel(0, 100, 5)
+    // guessingGame.addLevel(0, 120, 5)
+    // guessingGame.addLevel(0, 150, 6)
+    // guessingGame.addLevel(0, 200, 6)
+    // guessingGame.addLevel(0, 500, 7)
+    // guessingGame.addLevel(0, 1000, 7)
+    // guessingGame.addLevel(0, 2500, 8)
+    // guessingGame.addLevel(0, 10000, 12)
+    // guessingGame.addLevel(2, 13, 1)
 
-    guessingGame.init()
+    guessingGame.initPlayer()
 
     for {
         guessingGame.run()
@@ -102,6 +109,7 @@ func main() {
                 NO_MORE_TENTATIVES_DEFAULT_OUTPUT_FORMAT,
                 guessingGame.level.numberToGuess,
             )
+
             if enterpoint() {
                 guessingGame.reboot()
             } else {
@@ -112,36 +120,38 @@ func main() {
 }
 
 
-func (game *GameState) init() {
-    game.lastPlayerGuess = -1
-    game.playerTries = game.level.nTries
+func (game *GameState) initPlayer() {
+    game.player.triesLeft = game.level.nTries
+    game.player.lastGuess = NO_GUESS
 }
 
 
 func (game *GameState) reboot() {
     var level *GameLevel
+
     for level = game.level ; level.prev != nil ; level = level.prev {
         level.changeGuessingNumber()
     }
+
     game.level = level
     game.level.changeGuessingNumber()
-    game.init()
+    game.initPlayer()
 }
 
 
 func (game *GameState) run() {
     clear()
-    for game.consumeTry() {
+    for game.player.consumeTry() {
         fmt.Printf(
             MAIN_SECTION_DEFAULT_OUTPUT_FORMAT,
             game.level.id,
             game.level.minRange,
             game.level.maxRange,
-            game.playerTries + 1,
+            game.player.triesLeft + 1,
             game.giveHint(),
         )
 
-        fmt.Scan(&game.lastPlayerGuess)
+        fmt.Scan(&game.player.lastGuess)
         clear()
 
         if game.checkGuess() {
@@ -164,16 +174,16 @@ func (game *GameState) run() {
 }
 
 
-func (gameLevel *GameLevel) changeGuessingNumber() {
-    gameLevel.numberToGuess = 1 + rand.Intn(gameLevel.maxRange - 1) + gameLevel.minRange
+func (level *GameLevel) changeGuessingNumber() {
+    max, min := level.maxRange, level.minRange
+    level.numberToGuess = rand.Intn(max - 1) + min + 1
 }
 
 
 func (game *GameState) transitLevel() bool {
     if game.level != nil && game.level.next != nil {
         game.level = game.level.next
-        game.playerTries = game.level.nTries
-        game.lastPlayerGuess = -1
+        game.initPlayer()
         return true
     } else {
         return false
@@ -183,7 +193,7 @@ func (game *GameState) transitLevel() bool {
 
 func (game *GameState) addLevel(minRange, maxRange, nTries int) {
     defer func () {
-        game.totalLevels += 1
+        game.nLevels += 1
     }()
 
     if game.level == nil {
@@ -212,9 +222,9 @@ func (game *GameState) addLevel(minRange, maxRange, nTries int) {
 }
 
 
-func (game *GameState) consumeTry() bool {
-    if game.playerTries > 0 {
-        game.playerTries -= 1
+func (player *Player) consumeTry() bool {
+    if player.triesLeft > 0 {
+        player.triesLeft -= 1
         return true
     } else {
         return false
@@ -223,16 +233,16 @@ func (game *GameState) consumeTry() bool {
 
 
 func (game GameState) giveHint() string {
-    if lastGuess := game.lastPlayerGuess; lastGuess == -1 {
+    if lastGuess := game.player.lastGuess; lastGuess == NO_GUESS {
         return "no hints yet"
-    } else if game.level.numberToGuess > game.lastPlayerGuess {
-        return fmt.Sprintf("greater than %d", game.lastPlayerGuess)
+    } else if game.level.numberToGuess > game.player.lastGuess {
+        return fmt.Sprintf("greater than %d", game.player.lastGuess)
     } else {
-        return fmt.Sprintf("lower than %d", game.lastPlayerGuess)
+        return fmt.Sprintf("lower than %d", game.player.lastGuess)
     }
 }
 
 
 func (game GameState) checkGuess() bool {
-    return game.level.numberToGuess == game.lastPlayerGuess
+    return game.level.numberToGuess == game.player.lastGuess
 }
