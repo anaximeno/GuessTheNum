@@ -101,20 +101,22 @@ func main() {
 
     for {
         guessingGame.run()
-        if guessingGame.checkGuess() {
+        if g := &guessingGame; g.level.id == g.nLevels && g.checkGuess() {
             fmt.Print(WIN_GAME_OUTPUT)
             break
-        } else {
+        } else if g.player.triesLeft == 0 && !g.checkGuess() {
             fmt.Printf(
                 NO_MORE_TENTATIVES_DEFAULT_OUTPUT_FORMAT,
-                guessingGame.level.numberToGuess,
+                g.level.numberToGuess,
             )
 
             if enterpoint() {
-                guessingGame.reboot()
+                g.reboot()
             } else {
                 break
             }
+        } else {
+            break
         }
     }
 }
