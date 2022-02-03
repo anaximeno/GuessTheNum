@@ -237,10 +237,10 @@ func (player *Player) consumeTry() bool {
 func (game GameState) giveHint() string {
     if lastGuess := game.player.lastGuess; lastGuess == NO_GUESS {
         return "no hints yet"
-    } else if game.level.numberToGuess > game.player.lastGuess {
-        return fmt.Sprintf("greater than %d", game.player.lastGuess)
+    } else if game.level.numberToGuess > lastGuess {
+        return fmt.Sprintf("greater than %d", lastGuess)
     } else {
-        return fmt.Sprintf("lower than %d", game.player.lastGuess)
+        return fmt.Sprintf("lower than %d", lastGuess)
     }
 }
 
