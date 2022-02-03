@@ -84,18 +84,17 @@ func main() {
     guessingGame := GameState{ player: Player {} }
 
     /* Levels of the game */
-    guessingGame.addLevel(0, 2, 2)
-    guessingGame.addLevel(0, 2, 2)
-    // guessingGame.addLevel(0, 70, 5)
-    // guessingGame.addLevel(0, 100, 5)
-    // guessingGame.addLevel(0, 120, 5)
-    // guessingGame.addLevel(0, 150, 6)
-    // guessingGame.addLevel(0, 200, 6)
-    // guessingGame.addLevel(0, 500, 7)
-    // guessingGame.addLevel(0, 1000, 7)
-    // guessingGame.addLevel(0, 2500, 8)
-    // guessingGame.addLevel(0, 10000, 12)
-    // guessingGame.addLevel(2, 13, 1)
+    guessingGame.addLevel(0, 50, 5)
+    guessingGame.addLevel(0, 70, 5)
+    guessingGame.addLevel(0, 100, 5)
+    guessingGame.addLevel(0, 120, 5)
+    guessingGame.addLevel(0, 150, 6)
+    guessingGame.addLevel(0, 200, 6)
+    guessingGame.addLevel(0, 500, 7)
+    guessingGame.addLevel(0, 1000, 7)
+    guessingGame.addLevel(0, 2500, 8)
+    guessingGame.addLevel(0, 10000, 12)
+    guessingGame.addLevel(2, 13, 1)
 
     guessingGame.initPlayer()
 
