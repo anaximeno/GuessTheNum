@@ -1,0 +1,7 @@
+
+                    -> 0 MORE ATTEMPTS <-
+         You losed the game! The correct guess was %d
+
+      Write 'q' to quit or click 'enter' to play again.
+
+==> 

@@ -1,0 +1,7 @@
+
+ Level %d: Guess a number between %d and %d
+ %d more attempts
+
+ Hint: %s
+ ----------------------------
+ Guess => 

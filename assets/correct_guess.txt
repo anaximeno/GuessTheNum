@@ -1,0 +1,7 @@
+
+                  <<< CORRECT GUESS >>>
+           Continue to the next level %d -> %d ?
+
+     Write 'q' to quit or click 'enter' to continue
+
+==> 
