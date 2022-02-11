@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand"
+    "encoding/csv"
+    "strconv"
 	"os"
 	"time"
 )
@@ -58,32 +60,19 @@ func enterpoint() bool {
 }
 
 
+func check(err error) {
+    if err != nil {
+        panic(err)
+    }
+}
+
+
 func main() {
     rand.Seed(time.Now().UnixNano())
     guessingGame := GameState{}
-
-    // Adding some levels to the game.
-    // The levels are stored as a doubly linked-list
-    // This allows to transit to the next and prev level
-    // whenever it is necessary.
-    guessingGame.addLevel(0, 50, 5)
-    guessingGame.addLevel(0, 70, 5)
-    guessingGame.addLevel(0, 100, 5)
-    guessingGame.addLevel(0, 120, 5)
-    guessingGame.addLevel(0, 150, 6)
-    guessingGame.addLevel(0, 200, 6)
-    guessingGame.addLevel(0, 500, 7)
-    guessingGame.addLevel(0, 1000, 7)
-    guessingGame.addLevel(0, 2500, 8)
-    guessingGame.addLevel(0, 10000, 12)
-    guessingGame.addLevel(2, 13, 1)
-
     guessingGame.init()
 
     for {
-        // Runs the game on time
-        // and if the game was rebooted
-        // it will run again.
         guessingGame.run()
 
         if guessingGame.wasWon {
@@ -120,36 +109,20 @@ func (asset *Assets) load() {
     var err error
 
     dat, err = os.ReadFile("./assets/correct_guess.txt")
-
-    if err == nil {
-        asset.correctGuessOutStr = string(dat)
-    } else {
-        panic("file not found: " + "./assets/correct_guess.txt")
-    }
+    check(err)
+    asset.correctGuessOutStr = string(dat)
 
     dat, err = os.ReadFile("./assets/no_more_attempts.txt")
-
-    if err == nil {
-        asset.zeroAttempsOutStr = string(dat)
-    } else {
-        panic("file not found: " + "./assets/no_more_attempts.txt")
-    }
+    asset.zeroAttempsOutStr = string(dat)
+    check(err)
 
     dat, err = os.ReadFile("./assets/main_section.txt")
-
-    if err == nil {
-        asset.mainSectionOutStr = string(dat)
-    } else {
-        panic("file not found: " + "./assets/main_section.txt")
-    }
+    asset.mainSectionOutStr = string(dat)
+    check(err)
 
     dat, err = os.ReadFile("./assets/game_won.txt")
-
-    if err == nil {
-        asset.gameWonOutStr = string(dat)
-    } else {
-        panic("file not found: " + "./assets/game_won.txt")
-    }
+    asset.gameWonOutStr = string(dat)
+    check(err)
 }
 
 
@@ -170,13 +143,31 @@ func (player *Player) consumeTry() bool {
 
 
 func (game *GameState) init() {
-    // If there are at least on level the game will be initialized
-    // elseit will panic with the message bellow
-    if game.level == nil {
-        panic("There must been inserted at least one level before initializing the game")
-    }
     game.player = Player{}
     game.assets = Assets{}
+
+    file, err := os.Open("./assets/levels.csv")
+    check(err)
+
+    defer file.Close()
+
+    csvReader := csv.NewReader(file)
+    data, err := csvReader.ReadAll()
+    check(err)
+
+    // Reads the info of the levels of the game 
+    // from the file and insert new levels.
+    for _, level := range data {
+        min, err := strconv.Atoi(level[0])
+        check(err)
+        max, err := strconv.Atoi(level[1])
+        check(err)
+        attempts, err := strconv.Atoi(level[2])
+        check(err)
+
+        game.addLevel(min, max, attempts)
+    }
+
     game.assets.load()
     game.initPlayer()
 }
