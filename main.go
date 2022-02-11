@@ -157,7 +157,8 @@ func (game *GameState) init() {
 
     // Reads the info of the levels of the game 
     // from the file and insert new levels.
-    for _, level := range data {
+    for i, level := range data {
+        if i == 0 { continue } // Ignore the name of the columns
         min, err := strconv.Atoi(level[0])
         check(err)
         max, err := strconv.Atoi(level[1])
