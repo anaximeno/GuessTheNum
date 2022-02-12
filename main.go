@@ -20,7 +20,7 @@ type Assets struct {
 
 type GameLevel struct {
     id int
-    nTries int
+    nAttempts int
     minRange int
     maxRange int
     numberToGuess int
@@ -28,12 +28,10 @@ type GameLevel struct {
     prev *GameLevel
 }
 
-
 type Player struct {
-    triesLeft int
+    attempts int
     lastGuess int
 }
-
 
 type GameState struct {
     nLevels int
@@ -77,16 +75,15 @@ func main() {
 
         if guessingGame.wasWon {
             // If the player wins show this output
-            fmt.Print(guessingGame.assets.gameWonOutStr)
+            output := guessingGame.assets.gameWonOutStr
+            fmt.Print(output)
             break
-        } else if guessingGame.player.triesLeft == 0 {
+        } else if guessingGame.player.attempts == 0 {
             // If the player doesn't have more tries
             // show the output bellow
-            fmt.Printf(
-                guessingGame.assets.zeroAttempsOutStr,
-                guessingGame.level.numberToGuess,
-            )
-
+            output := guessingGame.assets.zeroAttempsOutStr
+            num := guessingGame.level.numberToGuess
+            fmt.Printf(output, num)
             if enterpoint() {
                 // If the player clicks 'enter' or another keyword than 'q'
                 // continue the game execution and reboot the game.
@@ -132,9 +129,9 @@ func (level *GameLevel) changeGuessingNumber() {
 }
 
 
-func (player *Player) consumeTry() bool {
-    if player.triesLeft > 0 {
-        player.triesLeft -= 1
+func (player *Player) consumeAttempt() bool {
+    if player.attempts > 0 {
+        player.attempts -= 1
         return true
     } else {
         return false
@@ -175,7 +172,7 @@ func (game *GameState) init() {
 
 
 func (game *GameState) initPlayer() {
-    game.player.triesLeft = game.level.nTries
+    game.player.attempts = game.level.nAttempts
     game.player.lastGuess = NO_GUESS
 }
 
@@ -201,17 +198,16 @@ func (game *GameState) run() {
     clear()
 
     // Executes while the player has attempts left
-    for game.player.consumeTry() {
-        fmt.Printf(
-            game.assets.mainSectionOutStr,
-            game.level.id,
-            game.level.minRange,
-            game.level.maxRange,
-            game.player.triesLeft + 1,
-            game.giveHint(),
-        )
+    for game.player.consumeAttempt() {
+        output := game.assets.mainSectionOutStr
+        level := game.level.id
+        min := game.level.minRange
+        max := game.level.maxRange
+        attempts := game.player.attempts + 1
+        nLevels := game.nLevels
+        hint := game.giveHint()
 
-        // Get the player's guess
+        fmt.Printf(output, level, nLevels, min, max, attempts, hint)
         fmt.Scan(&game.player.lastGuess)
         clear()
 
@@ -224,11 +220,10 @@ func (game *GameState) run() {
             // transited to all levels which also means that the 
             // player won the game.
             if game.transitLevel() {
-                fmt.Printf(
-                    game.assets.correctGuessOutStr,
-                    game.level.prev.id,
-                    game.level.id,
-                )
+                output := game.assets.correctGuessOutStr
+                prevLevel := game.level.prev.id
+                level := game.level.id
+                fmt.Printf(output, prevLevel, level)
 
                 if !enterpoint() {
                     // If the player chose to quit,
@@ -263,7 +258,8 @@ func (game *GameState) transitLevel() bool {
 }
 
 
-func (game *GameState) addLevel(minRange, maxRange, nTries int) {
+func (game *GameState) addLevel(minRange, maxRange, attempts int) {
+
     defer func () {
         // Increases the number of level in the state
         // at the end of the scope of this function.
@@ -273,7 +269,7 @@ func (game *GameState) addLevel(minRange, maxRange, nTries int) {
     if game.level == nil {
         game.level = &GameLevel{
             id:             1,
-            nTries:         nTries,
+            nAttempts:      attempts,
             minRange:       minRange,
             maxRange:       maxRange,
             prev:           nil,
@@ -285,7 +281,7 @@ func (game *GameState) addLevel(minRange, maxRange, nTries int) {
         for level = game.level ; level.next != nil ; level = level.next {}
         level.next = &GameLevel{
             id:             level.id + 1,
-            nTries:         nTries,
+            nAttempts:      attempts,
             minRange:       minRange,
             maxRange:       maxRange,
             prev:           level,
