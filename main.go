@@ -79,7 +79,7 @@ func main() {
             fmt.Print(output)
             break
         } else if guessingGame.player.attempts == 0 {
-            // If the player doesn't have more tries
+            // If the player doesn't have more attempts
             // show the output bellow
             output := guessingGame.assets.zeroAttempsOutStr
             num := guessingGame.level.numberToGuess
@@ -93,7 +93,7 @@ func main() {
                 break
             }
         } else {
-            // If this section is reach means that the player opted to 
+            // If this section is reach means that the player opted to
             // to quit the game instead of play the next level
             break
         }
@@ -124,8 +124,8 @@ func (asset *Assets) load() {
 
 
 func (level *GameLevel) changeGuessingNumber() {
-    max, min := level.maxRange, level.minRange
-    level.numberToGuess = rand.Intn(max - 1) + min + 1
+    max, min := level.maxRange - 1, level.minRange + 1
+    level.numberToGuess = rand.Intn(max) + min
 }
 
 
@@ -143,16 +143,17 @@ func (game *GameState) init() {
     game.player = Player{}
     game.assets = Assets{}
 
+    defer game.assets.load()
+    defer game.initPlayer()
+
     file, err := os.Open("./assets/levels.csv")
     check(err)
-
-    defer file.Close()
-
     csvReader := csv.NewReader(file)
     data, err := csvReader.ReadAll()
     check(err)
+    file.Close()
 
-    // Reads the info of the levels of the game 
+    // Reads the info of the levels of the game
     // from the file and insert new levels.
     for i, level := range data {
         if i == 0 { continue } // Ignore the name of the columns
@@ -165,9 +166,6 @@ func (game *GameState) init() {
 
         game.addLevel(min, max, attempts)
     }
-
-    game.assets.load()
-    game.initPlayer()
 }
 
 
@@ -180,7 +178,7 @@ func (game *GameState) initPlayer() {
 func (game *GameState) reboot() {
     var level *GameLevel
 
-    // Traversing the list from the next to the previous 
+    // Traversing the list from the next to the previous
     // node to reinitialize the number to be guessed.
     for level = game.level ; level.prev != nil ; level = level.prev {
         level.changeGuessingNumber()
@@ -217,14 +215,13 @@ func (game *GameState) run() {
         if game.checkGuess() {
             // If there are any level to transit continue the game
             // to the next level, else it means that the player had
-            // transited to all levels which also means that the 
+            // transited to all levels which also means that the
             // player won the game.
             if game.transitLevel() {
                 output := game.assets.correctGuessOutStr
                 prevLevel := game.level.prev.id
                 level := game.level.id
                 fmt.Printf(output, prevLevel, level)
-
                 if !enterpoint() {
                     // If the player chose to quit,
                     // break here.
@@ -235,7 +232,8 @@ func (game *GameState) run() {
                     clear()
                 }
             } else {
-                // If this section is reach, means that there are no more level,
+                // If this section is reach,
+                // it means that there are no more levels,
                 // that is, the game was won.
                 game.wasWon = true
                 break
@@ -307,7 +305,7 @@ func (game GameState) giveHint() string {
 
 
 func (game GameState) checkGuess() bool {
-    // compares the last guess of the player to the 
+    // compares the last guess of the player to the
     // number to be guessed.
     return game.level.numberToGuess == game.player.lastGuess
 }
