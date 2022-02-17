@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"math/rand"
+    "fmt"
+    "math/rand"
     "encoding/csv"
     "strconv"
-	"os"
-	"time"
+    "os"
+    "time"
 )
 
 const NO_GUESS int = -1
@@ -18,6 +18,9 @@ type Assets struct {
     zeroAttempsOutStr string
 }
 
+
+// Struct defining the levels of the
+// game as a doubly-linked list.
 type GameLevel struct {
     id int
     nAttempts int
@@ -110,16 +113,16 @@ func (asset *Assets) load() {
     asset.correctGuessOutStr = string(dat)
 
     dat, err = os.ReadFile("./assets/no_more_attempts.txt")
-    asset.zeroAttempsOutStr = string(dat)
     check(err)
+    asset.zeroAttempsOutStr = string(dat)
 
     dat, err = os.ReadFile("./assets/main_section.txt")
-    asset.mainSectionOutStr = string(dat)
     check(err)
+    asset.mainSectionOutStr = string(dat)
 
     dat, err = os.ReadFile("./assets/game_won.txt")
-    asset.gameWonOutStr = string(dat)
     check(err)
+    asset.gameWonOutStr = string(dat)
 }
 
 
