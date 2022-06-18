@@ -1,5 +1,6 @@
 package main
-
+// TODO: add feature to add the attempts that left from the
+// previous level to this level
 import (
     "fmt"
     "math/rand"
@@ -61,8 +62,10 @@ func enterpoint() bool {
 }
 
 
-func check(err error) {
+// TODO: Add expect message on error
+func check(err error, expect string) {
     if err != nil {
+        fmt.Println(expect)
         panic(err)
     }
 }
@@ -109,19 +112,19 @@ func (asset *Assets) load() {
     var err error
 
     dat, err = os.ReadFile("./assets/correct_guess.txt")
-    check(err)
+    check(err, "Asset file 'correct_guess.txt' not found!")
     asset.correctGuessOutStr = string(dat)
 
     dat, err = os.ReadFile("./assets/no_more_attempts.txt")
-    check(err)
+    check(err, "Asset file 'no_more_attemps.txt' not found!")
     asset.zeroAttempsOutStr = string(dat)
 
     dat, err = os.ReadFile("./assets/main_section.txt")
-    check(err)
+    check(err, "Asset file 'main_section.txt' not found!")
     asset.mainSectionOutStr = string(dat)
 
     dat, err = os.ReadFile("./assets/game_won.txt")
-    check(err)
+    check(err, "Asset file 'game_won.txt' not found!")
     asset.gameWonOutStr = string(dat)
 }
 
@@ -150,10 +153,10 @@ func (game *GameState) init() {
     defer game.initPlayer()
 
     file, err := os.Open("./assets/levels.csv")
-    check(err)
+    check(err, "Asset file 'levels.csv' not found!")
     csvReader := csv.NewReader(file)
     data, err := csvReader.ReadAll()
-    check(err)
+    check(err, "Could not read the levels csv file!")
     file.Close()
 
     // Reads the info of the levels of the game
@@ -161,11 +164,11 @@ func (game *GameState) init() {
     for i, level := range data {
         if i == 0 { continue } // Ignore the name of the columns
         min, err := strconv.Atoi(level[0])
-        check(err)
+        check(err, "Error converting value to integer!")
         max, err := strconv.Atoi(level[1])
-        check(err)
+        check(err, "Error converting value to integer!")
         attempts, err := strconv.Atoi(level[2])
-        check(err)
+        check(err, "Error converting value to integer!")
 
         game.addLevel(min, max, attempts)
     }
