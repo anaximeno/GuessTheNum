@@ -1,6 +1,5 @@
 package main
-// TODO: add feature to add the attempts that left from the
-// previous level to this level
+
 import (
     "fmt"
     "math/rand"
@@ -56,9 +55,8 @@ func enterpoint() bool {
     fmt.Scanln(&input)
     if input == "q" {
         return false
-    } else {
-        return true
     }
+    return true
 }
 
 
@@ -139,9 +137,8 @@ func (player *Player) consumeAttempt() bool {
     if player.attempts > 0 {
         player.attempts -= 1
         return true
-    } else {
-        return false
     }
+    return false
 }
 
 
@@ -256,9 +253,8 @@ func (game *GameState) transitLevel() bool {
         game.level = game.level.next
         game.initPlayer()
         return true
-    } else {
-        return false
     }
+    return false
 }
 
 
