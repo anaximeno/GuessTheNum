@@ -60,7 +60,6 @@ func enterpoint() bool {
 }
 
 
-// TODO: Add expect message on error
 func check(err error, expect string) {
     if err != nil {
         fmt.Println(expect)
